@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sage — The Web3 AI That Remembers You</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-left:    #0D1F0F;
+      --bg-center:  #121212;
+      --bg-right:   #1A1A1A;
+      --bg-header:  #0A0A0A;
+      --bg-input:   #1E1E1E;
+      --bg-card:    #181818;
+      --border:     #2A2A2A;
+      --border-dim: #1E2A1F;
+      --text-cream: #F5F0E8;
+      --text-muted: #A89880;
+      --text-dim:   #6B6055;
+      --sage:       #7FB069;
+      --sage-dark:  #142A16;
+      --sage-dim:   #3A5C35;
+      --gold:       #C4963A;
+      --gold-dark:  #2A1F0A;
+      --user-bubble:#2A2218;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-center);
+      color: var(--text-cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    .app {
+      display: grid;
+      grid-template-rows: 56px 1fr;
+      height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .logo svg { width: 28px; height: 28px; }
+
+    .logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--sage);
+      letter-spacing: 0.03em;
+    }
+
+    .tagline {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn-settings {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-settings:hover { color: var(--text-cream); border-color: var(--text-muted); }
+
+    .btn-wallet {
+      background: var(--sage-dark);
+      border: 1px solid var(--sage-dim);
+      color: var(--sage);
+      padding: 6px 16px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-wallet:hover { background: #1c3d1e; border-color: var(--sage); }
+    .btn-wallet.connected {
+      background: #0f1f10;
+      border-color: var(--sage-dim);
+      color: var(--sage);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    /* ── THREE COLUMNS ── */
+    .columns {
+      display: grid;
+      grid-template-columns: 220px 1fr 260px;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL — MEMORIES ── */
+    .panel-left {
+      background: var(--bg-left);
+      border-right: 1px solid var(--border-dim);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 14px 12px;
+      border-bottom: 1px solid var(--border-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .badge {
+      background: var(--gold-dark);
+      color: var(--gold);
+      border: 1px solid #4a3510;
+      font-size: 10px;
+      padding: 1px 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+    }
+
+    .memories-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .memories-list::-webkit-scrollbar { width: 4px; }
+    .memories-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .memory-card {
+      background: #0f1f10;
+      border: 1px solid var(--border-dim);
+      padding: 9px 10px;
+      margin-bottom: 7px;
+      position: relative;
+      cursor: default;
+      transition: border-color 0.2s;
+    }
+    .memory-card:hover { border-color: var(--sage-dim); }
+    .memory-card:hover .btn-delete { opacity: 1; }
+
+    .memory-card.semantic { border-left: 3px solid var(--gold); }
+    .memory-card.episodic { border-left: 3px solid var(--sage); }
+
+    .memory-meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      font-weight: 500;
+    }
+    .tag.semantic { background: var(--gold-dark); color: var(--gold); border: 1px solid #4a3510; }
+    .tag.episodic { background: var(--sage-dark); color: var(--sage); border: 1px solid var(--sage-dim); }
+    .tag.category { background: #1a1a1a; color: var(--text-dim); border: 1px solid var(--border); font-size: 9px; }
+
+    .memory-text {
+      font-size: 12px;
+      color: var(--text-cream);
+      line-height: 1.5;
+      padding-right: 16px;
+    }
+
+    .btn-delete {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 13px;
+      opacity: 0;
+      transition: color 0.2s, opacity 0.2s;
+      padding: 2px;
+      line-height: 1;
+    }
+    .btn-delete:hover { color: #e05555; }
+
+    .memories-empty {
+      padding: 30px 14px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .memories-empty .empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.5; }
+
+    .memories-footer {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border-dim);
+      flex-shrink: 0;
+    }
+
+    .powered-by {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-align: center;
+      letter-spacing: 0.06em;
+    }
+    .powered-by span { color: var(--sage); }
+
+    /* ── CENTER PANEL — CHAT ── */
+    .panel-center {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-center);
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .welcome-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+      gap: 12px;
+    }
+    .welcome-state .big-leaf { font-size: 48px; opacity: 0.4; }
+    .welcome-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      color: var(--text-cream);
+      font-weight: 400;
+    }
+    .welcome-sub {
+      color: var(--text-muted);
+      font-size: 14px;
+      max-width: 340px;
+    }
+    .welcome-hint {
+      color: var(--text-dim);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    /* message row */
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 72%;
+    }
+    .msg-row.user { align-self: flex-end; align-items: flex-end; }
+    .msg-row.assistant { align-self: flex-start; align-items: flex-start; }
+
+    .msg-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mem-badge {
+      background: var(--sage-dark);
+      color: var(--sage);
+      border: 1px solid var(--sage-dim);
+      font-size: 9px;
+      padding: 1px 6px;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .mem-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); }
+
+    .msg-bubble {
+      padding: 11px 15px;
+      font-size: 14px;
+      line-height: 1.65;
+      border: 1px solid transparent;
+    }
+    .msg-row.user .msg-bubble {
+      background: var(--user-bubble);
+      border-color: #3a3020;
+      color: var(--text-cream);
+      border-radius: 8px 2px 8px 8px;
+    }
+    .msg-row.assistant .msg-bubble {
+      background: var(--sage-dark);
+      border-color: var(--sage-dim);
+      color: var(--text-cream);
+      border-radius: 2px 8px 8px 8px;
+    }
+
+    /* typing indicator */
+    .typing-row { align-self: flex-start; }
+    .typing-bubble {
+      background: var(--sage-dark);
+      border: 1px solid var(--sage-dim);
+      padding: 12px 16px;
+      border-radius: 2px 8px 8px 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .typing-label-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      margin-right: 4px;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--sage);
+      animation: bounce 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* chat input */
+    .chat-input-area {
+      border-top: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #chat-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-cream);
+      padding: 10px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      resize: none;
+      min-height: 42px;
+      max-height: 120px;
+      line-height: 1.5;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #chat-input::placeholder { color: var(--text-dim); }
+    #chat-input:focus { border-color: var(--sage-dim); }
+
+    .btn-send {
+      background: var(--sage);
+      border: none;
+      color: #0a1a0b;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      transition: background 0.2s;
+      align-self: flex-end;
+      height: 42px;
+    }
+    .btn-send:hover { background: #8fc474; }
+    .btn-send:disabled { background: var(--sage-dim); cursor: not-allowed; opacity: 0.6; }
+
+    .input-footer {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-align: center;
+      letter-spacing: 0.06em;
+    }
+    .input-footer span { color: var(--sage); }
+
+    /* ── RIGHT PANEL — PROFILE ── */
+    .panel-right {
+      background: var(--bg-right);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .section {
+      padding: 16px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .bio-text {
+      font-size: 12px;
+      color: var(--text-cream);
+      line-height: 1.65;
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+    }
+    .bio-placeholder {
+      color: var(--text-dim);
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    .prompts-section {
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .prompt-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .chip {
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 11px;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .chip:hover {
+      background: var(--sage-dark);
+      border-color: var(--sage-dim);
+      color: var(--text-cream);
+    }
+
+    .wallet-section {
+      padding: 14px 14px;
+      flex-shrink: 0;
+    }
+
+    .wallet-address {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-cream);
+      word-break: break-all;
+      margin-bottom: 8px;
+    }
+
+    .network-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 3px 8px;
+      margin-bottom: 6px;
+    }
+    .net-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sage); }
+
+    .eth-balance {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .eth-balance span { color: var(--gold); font-family: 'JetBrains Mono', monospace; }
+
+    .wallet-placeholder {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .right-scroll {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .right-scroll::-webkit-scrollbar { width: 4px; }
+    .right-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+
+    /* ── SETTINGS MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #161616;
+      border: 1px solid var(--border);
+      padding: 28px;
+      width: 480px;
+      max-width: 90vw;
+    }
+
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      color: var(--text-cream);
+      margin-bottom: 6px;
+    }
+    .modal-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      line-height: 1.6;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+    .field label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-cream);
+      padding: 9px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--sage-dim); }
+    .field input::placeholder { color: var(--text-dim); font-family: 'DM Sans', sans-serif; font-size: 12px; }
+    .field-note {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 22px;
+    }
+
+    .btn-cancel {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 18px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-cancel:hover { color: var(--text-cream); border-color: var(--text-muted); }
+
+    .btn-save {
+      background: var(--sage);
+      border: none;
+      color: #0a1a0b;
+      padding: 8px 20px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-save:hover { background: #8fc474; }
+
+    .key-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .key-status.set { color: var(--sage); }
+    .key-status.unset { color: var(--gold); }
+    .key-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .key-dot.set { background: var(--sage); }
+    .key-dot.unset { background: var(--gold); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: #1e2a1f;
+      border: 1px solid var(--sage-dim);
+      color: var(--sage);
+      padding: 9px 20px;
+      font-size: 13px;
+      z-index: 200;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .columns {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+      }
+      .panel-left, .panel-right { display: none; }
+      .panel-left.mobile-active,
+      .panel-right.mobile-active {
+        display: flex;
+        position: fixed;
+        inset: 56px 0 56px 0;
+        z-index: 50;
+      }
+      .tagline { display: none; }
+      .mobile-tabs {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-header);
+        border-top: 1px solid var(--border);
+        z-index: 40;
+      }
+      .mobile-tab {
+        flex: 1;
+        padding: 10px;
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        transition: color 0.2s;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .mobile-tab.active { color: var(--sage); }
+      .mobile-tab svg { width: 18px; height: 18px; }
+    }
+    @media (min-width: 769px) {
+      .mobile-tabs { display: none; }
+    }
+
+    /* ── TYPEWRITER ── */
+    .typewriter::after {
+      content: '▋';
+      animation: blink 0.8s infinite;
+      color: var(--sage);
+      font-size: 0.85em;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 28 28" fill="none">
+        <path d="M14 3 C8 3 4 8 5 14 C6 19 10 22 14 25 C18 22 22 19 23 14 C24 8 20 3 14 3Z" fill="#142A16" stroke="#7FB069" stroke-width="1.2"/>
+        <path d="M14 7 C11 10 10 14 12 18 M14 7 C17 10 18 14 16 18" stroke="#7FB069" stroke-width="1" stroke-linecap="round"/>
+        <path d="M10 13 C12 12 16 12 18 13" stroke="#7FB069" stroke-width="0.8" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text">Sage</span>
+    </div>
+    <div class="tagline">The Web3 AI That Remembers You</div>
+    <div class="header-actions">
+      <button class="btn-settings" onclick="openSettings()" title="Settings">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M2.5 2.5l1 1M10.5 10.5l1 1M2.5 11.5l1-1M10.5 3.5l1-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Settings
+      </button>
+      <button class="btn-wallet" id="wallet-btn" onclick="connectWallet()">Connect Wallet</button>
+    </div>
+  </header>
+
+  <!-- THREE COLUMNS -->
+  <div class="columns">
+
+    <!-- LEFT: MEMORIES -->
+    <div class="panel-left" id="panel-left">
+      <div class="panel-header">
+        <span class="panel-title">Memories</span>
+        <span class="badge" id="memory-count">0</span>
+      </div>
+      <div class="memories-list" id="memories-list">
+        <div class="memories-empty">
+          <div class="empty-icon">🌿</div>
+          <div>Connect your wallet and start chatting — Sage will begin learning about you</div>
+        </div>
+      </div>
+      <div class="memories-footer">
+        <div class="powered-by">Powered by <span>OpenGradient MemSync</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER: CHAT -->
+    <div class="panel-center">
+      <div class="chat-messages" id="chat-messages">
+        <div class="welcome-state" id="welcome-state">
+          <div class="big-leaf">🌿</div>
+          <div class="welcome-title">Hello, I'm Sage</div>
+          <div class="welcome-sub">Your personal Web3 AI that remembers everything — your projects, positions, and goals — across every session.</div>
+          <div class="welcome-hint">Connect your wallet or start chatting to begin</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="input-row">
+          <textarea id="chat-input" placeholder="Ask anything about Web3, DeFi, or your projects..." rows="1" onkeydown="handleKeydown(event)" oninput="autoResize(this)"></textarea>
+          <button class="btn-send" id="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+        <div class="input-footer">Memories stored by <span>OpenGradient MemSync</span> · TEE-verified infrastructure</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: PROFILE -->
+    <div class="panel-right" id="panel-right">
+      <div class="right-scroll">
+        <div class="section">
+          <div class="section-title">Your Profile</div>
+          <div id="bio-content" class="bio-placeholder">Connect your wallet to build your profile</div>
+        </div>
+
+        <div class="prompts-section">
+          <div class="section-title">Quick Prompts</div>
+          <div class="prompt-chips">
+            <button class="chip" onclick="usePrompt('What do you remember about me?')">What do you remember about me?</button>
+            <button class="chip" onclick="usePrompt('What are my current DeFi positions?')">What are my current DeFi positions?</button>
+            <button class="chip" onclick="usePrompt('Help me analyze a token')">Help me analyze a token</button>
+            <button class="chip" onclick="usePrompt('What should I focus on today in Web3?')">What should I focus on today?</button>
+            <button class="chip" onclick="usePrompt('Explain reentrancy attacks in Solidity')">Explain reentrancy attacks</button>
+            <button class="chip" onclick="usePrompt('What DeFi protocols are considered safe?')">What DeFi protocols are safe?</button>
+          </div>
+        </div>
+
+        <div class="wallet-section">
+          <div class="section-title">Wallet</div>
+          <div id="wallet-info" class="wallet-placeholder">Not connected</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /columns -->
+</div><!-- /app -->
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal" onclick="closeSettingsIfBg(event)">
+  <div class="modal">
+    <div class="modal-title">Settings</div>
+    <div class="modal-sub">
+      Enter your MemSync API key to enable persistent memory. Your key is stored in this browser only and sent securely to the backend with each request.
+    </div>
+
+    <div class="field">
+      <label>MemSync API Key</label>
+      <input type="password" id="input-memsync-key" placeholder="Your MemSync API key" autocomplete="off" />
+      <div class="field-note">Get your key at opengradient.ai/memsync → Developers</div>
+    </div>
+
+    <div class="field">
+      <label>MemSync App Name</label>
+      <input type="text" id="input-memsync-app" placeholder="e.g. sage-web3-assistant" autocomplete="off" />
+      <div class="field-note">Must exactly match the app name registered with your API key</div>
+    </div>
+
+    <div id="key-status-display"></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-save" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MOBILE TABS -->
+<div class="mobile-tabs">
+  <button class="mobile-tab active" id="tab-chat" onclick="switchTab('chat')">
+    <svg viewBox="0 0 18 18" fill="none"><path d="M2 3h14v10H9l-4 3v-3H2V3z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+    Chat
+  </button>
+  <button class="mobile-tab" id="tab-memories" onclick="switchTab('memories')">
+    <svg viewBox="0 0 18 18" fill="none"><path d="M9 2C5.7 2 3 4.7 3 8s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6z" stroke="currentColor" stroke-width="1.2"/><path d="M9 5v4l2.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Memories
+  </button>
+  <button class="mobile-tab" id="tab-profile" onclick="switchTab('profile')">
+    <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M3 15c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Profile
+  </button>
+</div>
+
+<script>
+  const BACKEND_URL = "";
+
+  // ── STATE ──
+  let walletAddress = null;
+  let conversationHistory = [];
+  let isTyping = false;
+
+  // ── MEMSYNC CREDENTIALS ──
+  function getMemsyncKey() { return localStorage.getItem('sage_memsync_key') || ''; }
+  function getMemsyncApp() { return localStorage.getItem('sage_memsync_app') || 'sage-web3-assistant'; }
+
+  // ── SETTINGS ──
+  function openSettings() {
+    document.getElementById('input-memsync-key').value = getMemsyncKey();
+    document.getElementById('input-memsync-app').value = getMemsyncApp();
+    updateKeyStatusDisplay();
+    document.getElementById('settings-modal').classList.add('open');
+  }
+
+  function closeSettings() {
+    document.getElementById('settings-modal').classList.remove('open');
+  }
+
+  function closeSettingsIfBg(e) {
+    if (e.target === document.getElementById('settings-modal')) closeSettings();
+  }
+
+  function saveSettings() {
+    const key = document.getElementById('input-memsync-key').value.trim();
+    const app = document.getElementById('input-memsync-app').value.trim() || 'sage-web3-assistant';
+    if (key) {
+      localStorage.setItem('sage_memsync_key', key);
+      localStorage.setItem('sage_memsync_app', app);
+      closeSettings();
+      showToast('Settings saved — memory is now active');
+      if (walletAddress) {
+        loadMemories();
+        loadProfile();
+      }
+    } else {
+      localStorage.removeItem('sage_memsync_key');
+      localStorage.setItem('sage_memsync_app', app);
+      closeSettings();
+      showToast('MemSync key cleared');
+    }
+  }
+
+  function updateKeyStatusDisplay() {
+    const el = document.getElementById('key-status-display');
+    const key = getMemsyncKey();
+    if (key) {
+      el.innerHTML = `<div class="key-status set"><div class="key-dot set"></div> API key saved (${key.slice(0,8)}...)</div>`;
+    } else {
+      el.innerHTML = `<div class="key-status unset"><div class="key-dot unset"></div> No API key — memories disabled</div>`;
+    }
+  }
+
+  // ── WALLET ──
+  async function connectWallet() {
+    if (walletAddress) return;
+    if (!window.ethereum) {
+      showToast('MetaMask not found — install it at metamask.io');
+      return;
+    }
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      walletAddress = accounts[0];
+      updateWalletUI();
+      loadMemories();
+      loadProfile();
+      fetchBalance();
+    } catch (e) {
+      showToast('Wallet connection cancelled');
+    }
+  }
+
+  function updateWalletUI() {
+    const btn = document.getElementById('wallet-btn');
+    if (walletAddress) {
+      const short = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+      btn.textContent = short;
+      btn.classList.add('connected');
+    }
+  }
+
+  async function fetchBalance() {
+    if (!walletAddress || !window.ethereum) return;
+    try {
+      const hex = await window.ethereum.request({ method: 'eth_getBalance', params: [walletAddress, 'latest'] });
+      const eth = (parseInt(hex, 16) / 1e18).toFixed(4);
+      renderWalletInfo(eth);
+    } catch (e) { renderWalletInfo(null); }
+  }
+
+  function renderWalletInfo(balance) {
+    const el = document.getElementById('wallet-info');
+    if (!walletAddress) { el.innerHTML = '<span class="wallet-placeholder">Not connected</span>'; return; }
+    const short = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+    el.innerHTML = `
+      <div class="wallet-address">${short}</div>
+      <div class="network-badge"><div class="net-dot"></div> Ethereum</div>
+      ${balance !== null ? `<div class="eth-balance">Balance: <span>${balance} ETH</span></div>` : ''}
+    `;
+  }
+
+  // ── MEMORIES ──
+  async function loadMemories() {
+    const key = getMemsyncKey();
+    const app = getMemsyncApp();
+    if (!walletAddress || !key) return;
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/memories?walletAddress=${encodeURIComponent(walletAddress)}&memsyncApiKey=${encodeURIComponent(key)}&memsyncAppName=${encodeURIComponent(app)}`
+      );
+      const data = await res.json();
+      const mems = data.memories || data || [];
+      renderMemories(mems);
+    } catch (e) {
+      console.log('Failed to load memories:', e.message);
+    }
+  }
+
+  function renderMemories(memories) {
+    const list = document.getElementById('memories-list');
+    const countEl = document.getElementById('memory-count');
+
+    if (!memories || memories.length === 0) {
+      list.innerHTML = `
+        <div class="memories-empty">
+          <div class="empty-icon">🌿</div>
+          <div>Start chatting and Sage will begin learning about you</div>
+        </div>`;
+      countEl.textContent = '0';
+      return;
+    }
+
+    countEl.textContent = memories.length;
+    list.innerHTML = memories.map(m => {
+      const type = (m.type || 'semantic').toLowerCase();
+      const cats = (m.categories || []).slice(0, 2).map(c =>
+        `<span class="tag category">${c}</span>`
+      ).join('');
+      const memText = (m.memory || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `
+        <div class="memory-card ${type}">
+          <div class="memory-meta">
+            <span class="tag ${type}">${type}</span>
+            ${cats}
+          </div>
+          <div class="memory-text">${memText}</div>
+          <button class="btn-delete" onclick="deleteMemory('${m.id}')" title="Delete memory">✕</button>
+        </div>`;
+    }).join('');
+  }
+
+  async function deleteMemory(id) {
+    const key = getMemsyncKey();
+    if (!key) { showToast('MemSync key required'); return; }
+    try {
+      await fetch(`${BACKEND_URL}/api/memories/${id}?memsyncApiKey=${encodeURIComponent(key)}`, { method: 'DELETE' });
+      showToast('Memory deleted');
+      await loadMemories();
+    } catch (e) {
+      showToast('Failed to delete memory');
+    }
+  }
+
+  // ── PROFILE ──
+  async function loadProfile() {
+    const key = getMemsyncKey();
+    const app = getMemsyncApp();
+    if (!walletAddress || !key) return;
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/profile?walletAddress=${encodeURIComponent(walletAddress)}&memsyncApiKey=${encodeURIComponent(key)}&memsyncAppName=${encodeURIComponent(app)}`
+      );
+      const data = await res.json();
+      renderProfile(data);
+    } catch (e) {
+      console.log('Failed to load profile:', e.message);
+    }
+  }
+
+  function renderProfile(data) {
+    const el = document.getElementById('bio-content');
+    const bio = data.user_bio || (data.profiles && data.profiles.summary) || '';
+    if (bio) {
+      el.className = 'bio-text';
+      el.textContent = bio;
+    } else {
+      el.className = 'bio-placeholder';
+      el.textContent = 'Building your profile... keep chatting!';
+    }
+  }
+
+  // ── CHAT ──
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message || isTyping) return;
+
+    hideWelcome();
+    input.value = '';
+    autoResize(input);
+    isTyping = true;
+    document.getElementById('send-btn').disabled = true;
+
+    addMessage('user', message);
+    conversationHistory.push({ role: 'user', content: message });
+
+    showTyping();
+
+    try {
+      const key = getMemsyncKey();
+      const app = getMemsyncApp();
+      const res = await fetch(`${BACKEND_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          walletAddress,
+          conversationHistory: conversationHistory.slice(-10),
+          memsyncApiKey: key,
+          memsyncAppName: app
+        })
+      });
+      const data = await res.json();
+
+      hideTyping();
+
+      if (!res.ok || data.error || data.detail) {
+        addMessage('assistant', `Sorry, something went wrong: ${data.detail || data.details || data.error}`);
+      } else {
+        addMessage('assistant', data.response, data.memoriesUsed);
+        conversationHistory.push({ role: 'assistant', content: data.response });
+        if (data.memoriesUsed) {
+          setTimeout(() => loadMemories(), 3000);
+        } else if (walletAddress && key) {
+          setTimeout(() => loadMemories(), 4000);
+        }
+      }
+    } catch (e) {
+      hideTyping();
+      addMessage('assistant', 'Connection error — is the backend running? Start it with `npm start`.');
+    }
+
+    isTyping = false;
+    document.getElementById('send-btn').disabled = false;
+    scrollToBottom();
+  }
+
+  function addMessage(role, text, memoriesUsed = false) {
+    const container = document.getElementById('chat-messages');
+
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+
+    if (role === 'assistant') {
+      const label = document.createElement('div');
+      label.className = 'msg-label';
+      label.innerHTML = `🌿 Sage${memoriesUsed ? ' <div class="mem-badge"><div class="mem-dot"></div> Memory active</div>' : ''}`;
+      row.appendChild(label);
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+
+    if (role === 'assistant') {
+      bubble.classList.add('typewriter');
+      row.appendChild(bubble);
+      container.appendChild(row);
+      scrollToBottom();
+      typeText(bubble, text);
+    } else {
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      container.appendChild(row);
+      scrollToBottom();
+    }
+  }
+
+  function typeText(el, text) {
+    let i = 0;
+    const speed = 12;
+    function tick() {
+      if (i < text.length) {
+        el.textContent = text.slice(0, i + 1);
+        i++;
+        scrollToBottom();
+        setTimeout(tick, speed);
+      } else {
+        el.classList.remove('typewriter');
+      }
+    }
+    tick();
+  }
+
+  function showTyping() {
+    const container = document.getElementById('chat-messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant typing-row';
+    row.id = 'typing-indicator';
+    row.innerHTML = `
+      <div class="typing-bubble">
+        <span class="typing-label-text">Sage is thinking</span>
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>`;
+    container.appendChild(row);
+    scrollToBottom();
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function hideWelcome() {
+    const w = document.getElementById('welcome-state');
+    if (w) w.remove();
+  }
+
+  function scrollToBottom() {
+    const c = document.getElementById('chat-messages');
+    c.scrollTop = c.scrollHeight;
+  }
+
+  function usePrompt(text) {
+    document.getElementById('chat-input').value = text;
+    document.getElementById('chat-input').focus();
+    autoResize(document.getElementById('chat-input'));
+    // On mobile, switch to chat tab
+    if (window.innerWidth <= 768) switchTab('chat');
+  }
+
+  function handleKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── MOBILE TABS ──
+  function switchTab(tab) {
+    document.getElementById('panel-left').classList.remove('mobile-active');
+    document.getElementById('panel-right').classList.remove('mobile-active');
+    ['chat', 'memories', 'profile'].forEach(t => {
+      document.getElementById(`tab-${t}`)?.classList.remove('active');
+    });
+    document.getElementById(`tab-${tab}`)?.classList.add('active');
+    if (tab === 'memories') document.getElementById('panel-left').classList.add('mobile-active');
+    if (tab === 'profile') document.getElementById('panel-right').classList.add('mobile-active');
+  }
+
+  // ── INIT ──
+  window.addEventListener('load', () => {
+    // Auto-connect if previously connected
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+        if (accounts.length > 0) {
+          walletAddress = accounts[0];
+          updateWalletUI();
+          fetchBalance();
+          renderWalletInfo(null);
+          if (getMemsyncKey()) {
+            loadMemories();
+            loadProfile();
+          }
+        }
+      });
+      window.ethereum.on('accountsChanged', accounts => {
+        walletAddress = accounts[0] || null;
+        updateWalletUI();
+        if (walletAddress) {
+          fetchBalance();
+          loadMemories();
+          loadProfile();
+        }
+      });
+    }
+
+    // Show prompt to set up key if not set
+    if (!getMemsyncKey()) {
+      setTimeout(() => {
+        showToast('Set your MemSync API key in Settings to enable memory');
+      }, 1500);
+    }
+  });
+</script>
+</body>
+</html>

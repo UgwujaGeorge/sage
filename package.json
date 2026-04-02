@@ -1,0 +1,21 @@
+{
+  "name": "sage",
+  "version": "1.0.0",
+  "description": "Sage — The Web3 AI That Remembers You",
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\uvicorn.exe backend.main:app --port 8000",
+    "frontend": "npx serve . -p 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2"
+  }
+}
