@@ -1,0 +1,15 @@
+{
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://sage-production-f40e.up.railway.app/api/$1"
+    },
+    {
+      "source": "/health",
+      "destination": "https://sage-production-f40e.up.railway.app/health"
+    }
+  ]
+}
