@@ -148,13 +148,16 @@ You are the AI that never forgets. Every conversation makes you more helpful to 
     messages.append({"role": "user", "content": req.message})
 
     # 4. Call OpenGradient via x402
-    result = await llm.chat(
-        model=og.TEE_LLM.CLAUDE_HAIKU_4_5,
-        messages=messages,
-        max_tokens=1000,
-        temperature=0.7,
-    )
-    ai_response = result.chat_output["content"]
+    try:
+        result = await llm.chat(
+            model=og.TEE_LLM.CLAUDE_HAIKU_4_5,
+            messages=messages,
+            max_tokens=1000,
+            temperature=0.7,
+        )
+        ai_response = result.chat_output["content"]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     # 5. Store in MemSync async (fire and forget)
     if req.walletAddress and req.memsyncApiKey:
