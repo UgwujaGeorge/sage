@@ -37,7 +37,7 @@ async def ensure_approval():
     global opg_approved
     if not opg_approved:
         try:
-            llm.ensure_opg_approval(min_allowance=0.1, approve_amount=0.1)
+            llm.ensure_opg_approval(min_allowance=0.01, approve_amount=0.05)
             opg_approved = True
         except ValueError as e:
             raise HTTPException(status_code=402, detail=str(e))
